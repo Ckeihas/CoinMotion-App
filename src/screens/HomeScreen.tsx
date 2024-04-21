@@ -1,17 +1,66 @@
-import React from 'react'
-import { View, Text, StyleSheet, Dimensions, Image, SafeAreaView, TouchableOpacity } from 'react-native'
+import React, {useState, useEffect} from 'react'
+import { View, Text, StyleSheet, Dimensions, Image, SafeAreaView, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { LinearGradient } from 'expo-linear-gradient';
 import { styled } from "nativewind";
 import { BlurView } from 'expo-blur';
 import { AntDesign } from '@expo/vector-icons';
 import Button from '../components/button/Button';
 import StockFlatList from '../components/StockFlatList';
+import axios from 'axios';
 
 
 const StyledView = styled(View)
 
 const { width, height } = Dimensions.get('window');
+interface ICryptoData {
+    id: string,
+    symbol: string,
+    name: string,
+    rank: number,
+    price_usd: string,
+    percent_change_24h: string,
+    percent_change_1h: string,
+    percent_change_7d: string
+};
+
 const HomeScreen = () => {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(false);
+    const [cryptoData, setCryptoData] = useState<ICryptoData[]>([]);
+
+    const FetchCryptoData = async () => {
+        if(loading){
+            return;
+        };
+        setLoading(true)
+        try {
+            const response = await axios.get('https://api.coinlore.net/api/tickers/?limit=3');
+            const data = response.data;
+            console.log("data: ", data)
+            const formattedData = data.data.map((crypto: any) => ({
+                id: crypto.id,
+                symbol: crypto.symbol,
+                name: crypto.name,
+                rank: crypto.rank,
+                price_usd: crypto.price_usd,
+                percent_change_24h: crypto.percent_change_24h,
+                percent_change_1h: crypto.percent_change_1h,
+                percent_change_7d: crypto.percent_change_7d
+            }))
+
+            setCryptoData(formattedData)
+            setLoading(false)
+        } catch (error) {
+            setError(true)
+            setLoading(false)
+            console.log("Error fetching crypto data: ", error)
+        }
+    };
+
+    useEffect(() => {
+        FetchCryptoData();
+    }, []);
+
   return (
     <SafeAreaView style={styles.container}>
         <LinearGradient
@@ -56,7 +105,10 @@ const HomeScreen = () => {
 
         <View style={styles.stockView}>
             <Text style={styles.coinHeaderText}>Coins</Text>
-            <StockFlatList />     
+            {loading && cryptoData.length == 0 ? 
+            <ActivityIndicator size={30}/> : 
+            <StockFlatList cryptoData={cryptoData}/> 
+            }    
         </View>
         <View style={{alignItems: 'center', justifyContent: 'center'}}>
             <Button title='Load More' width={150}/>
