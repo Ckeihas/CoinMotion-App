@@ -109,14 +109,14 @@ export default function BottomTabNavigation(){
                 />
                 <Tab.Screen 
                 name="nft" 
-                component={NftScreen} 
+                component={WalletScreen} 
                 options={{
                     tabBarIcon: ({color, size}) => <WalletIconWithLinearGradient color={color}/>,
                 }}
                 />
                 <Tab.Screen 
                 name="wallet" 
-                component={WalletScreen} 
+                component={NftScreen} 
                 options={{
                     tabBarIcon: ({color, size}) => <SettingsIconWithLinearGradient color={color}/>,
                 }}
